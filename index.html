@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Music Player</title>
+  <style>
+    /* Dark scheme and mobile-friendly design */
+    body {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #player {
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 10px;
+      padding: 20px;
+      background-color: #2b2b2b;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+    button {
+      background-color: #3e3e3e;
+      border: none;
+      border-radius: 5px;
+      color: #f0f0f0;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    #progress-container {
+      width: 100%;
+      background-color: #444;
+      border-radius: 5px;
+      margin-top: 15px;
+      height: 10px;
+      cursor: pointer;
+    }
+    #progress {
+      background-color: #4caf50;
+      height: 10px;
+      width: 0;
+      border-radius: 5px;
+    }
+    #current-time, #duration {
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div id="player">
+    <h2 id="song-title">Song Title</h2>
+    <div id="progress-container">
+      <div id="progress"></div>
+    </div>
+    <div id="time">
+      <span id="current-time">00:00</span> / <span id="duration">00:00</span>
+    </div>
+    <div id="controls">
+      <button onclick="rewind()">⏪</button>
+      <button onclick="prevSong()">⏮️</button>
+      <button onclick="togglePlayPause()">⏯️</button>
+      <button onclick="nextSong()">⏭️</button>
+      <button onclick="fastForward()">⏩</button>
+    </div>
+  </div>
+
+  <audio id="audio"></audio>
+
+  <script>
+    // Song data
+    const songs = [
+      { title: "Japji Sahib", src: "Shabads/JapjiSahib.mp3" },
+      { title: "Jaap Sahib", src: "Shabads/JaapSahib.mp3" },
+      { title: "Tav Prasad Savaiye", src: "Shabads/TavPrasadSavaiye.mp3" },
+      { title: "Chaupai Sahib", src: "Shabads/ChaupaiSahib.mp3" },
+      { title: "Anand Sahib", src: "Shabads/AnandSahib.mp3" },
+      { title: "Rehras Sahib", src: "Shabads/RehrasSahib.mp3" }
+    ];
+
+    let songIndex = 0;
+    const audio = document.getElementById("audio");
+    const songTitle = document.getElementById("song-title");
+    const progressContainer = document.getElementById("progress-container");
+    const progress = document.getElementById("progress");
+    const currentTimeEl = document.getElementById("current-time");
+    const durationEl = document.getElementById("duration");
+
+    // Load song
+    function loadSong(index) {
+      audio.src = songs[index].src;
+      songTitle.innerText = songs[index].title;
+    }
+
+    // Play or pause the song
+    function togglePlayPause() {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    // Update progress bar and time display
+    function updateProgress() {
+      const currentTime = audio.currentTime;
+      const duration = audio.duration;
+      const progressPercent = (currentTime / duration) * 100;
+      progress.style.width = progressPercent + "%";
+
+      currentTimeEl.textContent = formatTime(currentTime);
+      durationEl.textContent = formatTime(duration);
+    }
+
+    // Format time in MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // Set progress on click
+    progressContainer.addEventListener("click", (e) => {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
+    });
+
+    // Go to previous song
+    function prevSong() {
+      songIndex = (songIndex - 1 + songs.length) % songs.length;
+      loadSong(songIndex);
+      audio.play();
+    }
+
+    // Go to next song
+    function nextSong() {
+      songIndex = (songIndex + 1) % songs.length;
+      loadSong(songIndex);
+      audio.play();
+    }
+
+    // Rewind 5 seconds
+    function rewind() {
+      audio.currentTime = Math.max(0, audio.currentTime - 5);
+    }
+
+    // Fast forward 5 seconds
+    function fastForward() {
+      audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+    }
+
+    // Update progress bar as song plays
+    audio.addEventListener("timeupdate", updateProgress);
+
+    // Play next song when current one ends
+    audio.addEventListener("ended", nextSong);
+
+    // Initialize player
+    loadSong(songIndex);
+  </script>
+</body>
+</html>
